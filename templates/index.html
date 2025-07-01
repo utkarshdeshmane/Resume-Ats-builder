@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart ATS & Resume Builder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-header {
+            background-color: #4a6fa5;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .btn-primary {
+            background-color: #4a6fa5;
+            border-color: #4a6fa5;
+        }
+        .btn-primary:hover {
+            background-color: #3a5a80;
+            border-color: #3a5a80;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #4a6fa5;
+        }
+        .nav-pills .nav-link {
+            color: #4a6fa5;
+        }
+        .form-control:focus {
+            border-color: #4a6fa5;
+            box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.25);
+        }
+        .header-container {
+            background-color: #4a6fa5;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container text-center">
+            <h1>🚀 Smart ATS & Resume Builder</h1>
+            <p class="lead">Powered by Gemini AI</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">Navigation</div>
+                    <div class="card-body">
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <button class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">🏠 Home</button>
+                            <button class="nav-link" id="v-pills-build-tab" data-bs-toggle="pill" data-bs-target="#v-pills-build" type="button" role="tab" aria-controls="v-pills-build" aria-selected="false">📝 Resume Builder from JD</button>
+                            <button class="nav-link" id="v-pills-upgrade-tab" data-bs-toggle="pill" data-bs-target="#v-pills-upgrade" type="button" role="tab" aria-controls="v-pills-upgrade" aria-selected="false">♻️ Resume Builder from My Resume</button>
+                            <button class="nav-link" id="v-pills-ats-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ats" type="button" role="tab" aria-controls="v-pills-ats" aria-selected="false">🔍 ATS Checker</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="tab-content" id="v-pills-tabContent">
+                    <!-- Home Tab -->
+                    <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                        <div class="card">
+                            <div class="card-header">Welcome to Smart ATS & Resume Builder</div>
+                            <div class="card-body">
+                                <h5 class="card-title">Build ATS-Optimized Resumes with AI</h5>
+                                <p class="card-text">This tool helps you create professional, ATS-friendly resumes tailored to specific job descriptions.</p>
+                                <p class="card-text">Use the navigation menu to:</p>
+                                <ul>
+                                    <li>Create a new resume from a job description</li>
+                                    <li>Upgrade your existing resume to match a job description</li>
+                                </ul>
+                                <p class="card-text">Powered by Gemini AI for intelligent resume generation and optimization.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Build Resume Tab -->
+                    <div class="tab-pane fade" id="v-pills-build" role="tabpanel" aria-labelledby="v-pills-build-tab">
+                        <div class="card">
+                            <div class="card-header">📝 Resume Builder from JD</div>
+                            <div class="card-body">
+                                <form id="build-resume-form" action="/build-resume/" method="post" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="jd" class="form-label">📋 Paste the Job Description</label>
+                                        <textarea class="form-control" id="jd" name="jd" rows="10" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Select Resume Format</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="export_format" id="pdf" value="PDF" checked>
+                                            <label class="form-check-label" for="pdf">PDF</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="export_format" id="word" value="Word">
+                                            <label class="form-check-label" for="word">Word (.docx)</label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Build Resume</button>
+                                </form>
+                                <div id="build-loading" class="loading">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Generating your resume... This may take a minute.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upgrade Resume Tab -->
+                    <div class="tab-pane fade" id="v-pills-upgrade" role="tabpanel" aria-labelledby="v-pills-upgrade-tab">
+                        <div class="card">
+                            <div class="card-header">♻️ Resume Builder from My Resume</div>
+                            <div class="card-body">
+                                <form id="upgrade-resume-form" action="/upgrade-resume/" method="post" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="file" class="form-label">📄 Upload Old Resume (PDF)</label>
+                                        <input class="form-control" type="file" id="file" name="file" accept=".pdf" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="jd-upgrade" class="form-label">📋 Paste the Job Description</label>
+                                        <textarea class="form-control" id="jd-upgrade" name="jd" rows="10" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Select Resume Format</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="export_format" id="pdf-upgrade" value="PDF" checked>
+                                            <label class="form-check-label" for="pdf-upgrade">PDF</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="export_format" id="word-upgrade" value="Word">
+                                            <label class="form-check-label" for="word-upgrade">Word (.docx)</label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Upgrade My Resume</button>
+                                </form>
+                                <div id="upgrade-loading" class="loading">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Upgrading your resume... This may take a minute.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Add this new tab content after your existing tab panes -->
+                    <div class="tab-pane fade" id="v-pills-ats" role="tabpanel" aria-labelledby="v-pills-ats-tab">
+                        <div class="card">
+                            <div class="card-header">🔍 ATS Resume Checker</div>
+                            <div class="card-body">
+                                <form id="ats-check-form" action="/check-ats/" method="post" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="file-ats" class="form-label">📄 Upload Your Resume (PDF)</label>
+                                        <input class="form-control" type="file" id="file-ats" name="file" accept=".pdf" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="jd-ats" class="form-label">📋 Paste the Job Description</label>
+                                        <textarea class="form-control" id="jd-ats" name="jd" rows="10" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Check ATS Compatibility</button>
+                                </form>
+                                <div id="ats-loading" class="loading">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Analyzing your resume... This may take a minute.</p>
+                                </div>
+                                <div id="ats-results" class="mt-4" style="display: none;">
+                                    <h4>ATS Analysis Results</h4>
+                                    <div class="card mb-3">
+                                        <div class="card-header">Match Score</div>
+                                        <div class="card-body">
+                                            <div class="progress">
+                                                <div id="match-percentage-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                            </div>
+                                            <p id="match-percentage-text" class="mt-2">Match percentage: 0%</p>
+                                        </div>
+                                    </div>
+                                    <div class="card mb-3">
+                                        <div class="card-header">Profile Summary</div>
+                                        <div class="card-body">
+                                            <p id="profile-summary">No data available yet.</p>
+                                        </div>
+                                    </div>
+                                    <div class="card mb-3">
+                                        <div class="card-header">Missing Keywords</div>
+                                        <div class="card-body">
+                                            <ul id="missing-keywords">
+                                                <li>No data available yet.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="card mb-3">
+                                        <div class="card-header">Improvement Suggestions</div>
+                                        <div class="card-body">
+                                            <ul id="improvement-suggestions">
+                                                <li>No data available yet.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show loading spinner when forms are submitted
+        document.getElementById('build-resume-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            document.getElementById('build-loading').style.display = 'block';
+            
+            const formData = new FormData(this);
+            
+            fetch('/build-resume/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                document.getElementById('build-loading').style.display = 'none';
+                
+                // Create a preview container if it doesn't exist
+                let previewContainer = document.getElementById('build-preview-container');
+                if (!previewContainer) {
+                    previewContainer = document.createElement('div');
+                    previewContainer.id = 'build-preview-container';
+                    previewContainer.className = 'mt-4';
+                    document.querySelector('#v-pills-build .card-body').appendChild(previewContainer);
+                }
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const filename = 'generated_resume.' + 
+                                 (formData.get('export_format') === 'PDF' ? 'pdf' : 'docx');
+                
+                previewContainer.innerHTML = `
+                    <div class="alert alert-success">
+                        <h5>Resume Successfully Generated!</h5>
+                        <p>Your new resume is ready. Click below to download:</p>
+                        <a href="${url}" download="${filename}" class="btn btn-success">
+                            Download ${formData.get('export_format')} Resume
+                        </a>
+                    </div>
+                    ${formData.get('export_format') === 'PDF' ? 
+                        `<div class="mt-3">
+                            <h5>Preview:</h5>
+                            <iframe src="${url}" width="100%" height="500px" style="border: 1px solid #ddd;"></iframe>
+                        </div>` : 
+                        `<div class="mt-3">
+                            <h5>Preview:</h5>
+                            <p class="text-muted">Preview not available for Word documents. Please download to view.</p>
+                        </div>`
+                    }
+                `;
+            })
+            .catch(error => {
+                document.getElementById('build-loading').style.display = 'none';
+                alert('Error generating resume: ' + error);
+            });
+        });
+        
+        document.getElementById('upgrade-resume-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            document.getElementById('upgrade-loading').style.display = 'block';
+            
+            const formData = new FormData(this);
+            
+            fetch('/upgrade-resume/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                document.getElementById('upgrade-loading').style.display = 'none';
+                
+                // Create a preview container if it doesn't exist
+                let previewContainer = document.getElementById('resume-preview-container');
+                if (!previewContainer) {
+                    previewContainer = document.createElement('div');
+                    previewContainer.id = 'resume-preview-container';
+                    previewContainer.className = 'mt-4';
+                    document.querySelector('#v-pills-upgrade .card-body').appendChild(previewContainer);
+                }
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const filename = formData.get('file').name.replace('.pdf', '') + '_upgraded.' + 
+                                 (formData.get('export_format') === 'PDF' ? 'pdf' : 'docx');
+                
+                previewContainer.innerHTML = `
+                    <div class="alert alert-success">
+                        <h5>Resume Successfully Generated!</h5>
+                        <p>Your upgraded resume is ready. Click below to download:</p>
+                        <a href="${url}" download="${filename}" class="btn btn-success">
+                            Download ${formData.get('export_format')} Resume
+                        </a>
+                    </div>
+                    ${formData.get('export_format') === 'PDF' ? 
+                        `<div class="mt-3">
+                            <h5>Preview:</h5>
+                            <iframe src="${url}" width="100%" height="500px" style="border: 1px solid #ddd;"></iframe>
+                        </div>` : 
+                        `<div class="mt-3">
+                            <h5>Preview:</h5>
+                            <p class="text-muted">Preview not available for Word documents. Please download to view.</p>
+                        </div>`
+                    }
+                `;
+            })
+            .catch(error => {
+                document.getElementById('upgrade-loading').style.display = 'none';
+                alert('Error generating resume: ' + error);
+            });
+        });
+        
+        // ATS checker form handling
+        document.getElementById('ats-check-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('ats-loading').style.display = 'block';
+            document.getElementById('ats-results').style.display = 'none';
+            
+            const formData = new FormData(this);
+            
+            fetch('/check-ats/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ats-loading').style.display = 'none';
+                document.getElementById('ats-results').style.display = 'block';
+                
+                // Handle raw result if parsing failed on server
+                if (data.raw_result) {
+                    try {
+                        // Try to parse the raw_result as JSON
+                        const jsonData = JSON.parse(data.raw_result);
+                        displayATSResults(jsonData);
+                    } catch (e) {
+                        // If parsing fails, display the raw text
+                        document.getElementById('profile-summary').textContent = data.raw_result;
+                        document.getElementById('missing-keywords').innerHTML = '<li>Parsing error</li>';
+                        document.getElementById('improvement-suggestions').innerHTML = '<li>Parsing error</li>';
+                        document.getElementById('match-percentage-text').textContent = 'Match percentage: N/A';
+                        document.getElementById('match-percentage-bar').style.width = '0%';
+                        document.getElementById('match-percentage-bar').textContent = 'N/A';
+                    }
+                    return;
+                }
+                
+                // Display the results
+                displayATSResults(data);
+            })
+            .catch(error => {
+                document.getElementById('ats-loading').style.display = 'none';
+                alert('Error analyzing resume: ' + error);
+            });
+        });
+        
+        // Helper function to display ATS results
+        function displayATSResults(data) {
+            // Update match percentage
+            document.getElementById('match-percentage-bar').style.width = data.match_percentage;
+            document.getElementById('match-percentage-bar').textContent = data.match_percentage;
+            document.getElementById('match-percentage-text').textContent = 'Match percentage: ' + data.match_percentage;
+            
+            // Update profile summary
+            document.getElementById('profile-summary').textContent = data.profile_summary;
+            
+            // Update missing keywords
+            let keywordsHtml = '';
+            if (Array.isArray(data.missing_keywords)) {
+                data.missing_keywords.forEach(keyword => {
+                    keywordsHtml += `<li>${keyword}</li>`;
+                });
+            } else {
+                keywordsHtml = '<li>No missing keywords data available</li>';
+            }
+            document.getElementById('missing-keywords').innerHTML = keywordsHtml || '<li>No missing keywords!</li>';
+            
+            // Update improvement suggestions
+            let suggestionsHtml = '';
+            if (Array.isArray(data.improvement_suggestions)) {
+                data.improvement_suggestions.forEach(suggestion => {
+                    suggestionsHtml += `<li>${suggestion}</li>`;
+                });
+            } else {
+                suggestionsHtml = '<li>No improvement suggestions data available</li>';
+            }
+            document.getElementById('improvement-suggestions').innerHTML = suggestionsHtml || '<li>No suggestions available.</li>';
+        }
+    </script>
+</body>
+</html>

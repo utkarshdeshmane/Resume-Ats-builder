@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }}'s Resume</title>
+</head>
+<body>
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    color: #4a90e2;
+}
+
+section {
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 1.5em;
+    color: #4a90e2;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin: 5px 0;
+}
+
+</style>
+    <header>
+        <h1>{{ name }}</h1>
+        <p>{{ email }} | {{ phone }}</p>
+    </header>
+    <section>
+        <h2>Summary</h2>
+        <p>{{ summary }}</p>
+    </section>
+    <section>
+        <h2>Skills</h2>
+        <ul>
+            {% for skill in skills %}
+            <li>{{ skill }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    <section>
+        <h2>Experience</h2>
+        <ul>
+            {% for exp in experience %}
+            <li>{{ exp }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    <section>
+        <h2>Education</h2>
+        <ul>
+            {% for edu in education %}
+            <li>{{ edu }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    <section>
+        <h2>Certifications</h2>
+        <ul>
+            {% for cert in certifications %}
+            <li>{{ cert }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    <section>
+        <h2>Projects</h2>
+        <ul>
+            {% for cert in certifications %}
+            <li>{{ Projects }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+</body>
+</html>
