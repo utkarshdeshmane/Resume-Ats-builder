@@ -1,3 +1,5 @@
+# main.py
+
 from fastapi import FastAPI, UploadFile, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -79,6 +81,33 @@ class ResumeData(BaseModel):
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
+@app.get("/resume/{template_name}", response_class=HTMLResponse)
+async def generate_resume(request: Request, template_name: str):
+    """
+    Render resume templates dynamically based on template_name
+    """
+    template_map = {
+        "template1": "resume_template1.html",
+        "template2": "resume_template2.html",
+        "template3": "resume_template3.html",
+    }
+
+    if template_name not in template_map:
+        return HTMLResponse(content="Invalid template name", status_code=400)
+
+    # Example context data for rendering
+    context = {
+        "request": request,
+        "name": "Utkarsh Deshmane",
+        "email": "utkarsh@example.com",
+        "skills": ["Python", "FastAPI", "SQL"],
+        # Extend with dynamic data as needed
+    }
+
+    return templates.TemplateResponse(template_map[template_name], context)
+
+
 @app.post("/check-ats/")
 async def check_ats(jd: str = Form(...), file: UploadFile = Form(...)):
     """
@@ -124,23 +153,50 @@ async def check_ats(jd: str = Form(...), file: UploadFile = Form(...)):
         logger.error(f"JSON parsing failed: {e}")
         return JSONResponse(content={"raw_result": ats_result, "error": str(e)})
 
+
 @app.post("/build-resume/")
 async def build_resume(jd: str = Form(...), export_format: str = Form(...)):
-    builder_prompt = f"""
-    Write a resume for a candidate applying to the following JD:
-    {jd}
-
-    Include:
-    - Contact Info (dummy)
-    - Summary
-    - Skills
-    - Work Experience
-    - Education
-    - Certifications
-    - Projects
-
-    Format it nicely in markdown/plain text.
     """
+    Build a resume from a job description in specified export format (PDF or Word)
+    """
+    builder_prompt = f"""
+        Write an ATS-friendly resume for a candidate applying to the following JD:
+        {jd}
+
+        Include at the top:
+        - Name: Dummy Name
+        - Location: Dummy City, Dummy Country
+        - Phone: +91-9999999999
+        - Email: dummy@example.com
+        - Years of Experience: X years
+        - Resume Link: dummyresume.com
+
+        Mandatory Sections:
+        - Professional Summary (highlight 2-3 impactful soft skills such as Time Management, Problem Solving, or Leadership relevant to the JD)
+        - Skills (include both technical and soft skills with proper casing, avoiding weak verbs)
+        - Work Experience (use strong action verbs, avoid repeated or weak verbs)
+        - Educational History
+        - Certifications
+        - Projects (brief impact statements)
+        - Hobbies (list 1-2 only if meaningful to the role)
+
+        Formatting Requirements:
+        - Content formatted in clean, structured markdown or plain text
+        - Avoid images in the resume
+        - Ensure ATS compatibility with proper headings
+        - No unwanted personal information such as religion, caste, or marital status
+        - Professional email formatting
+        - Skill ratings if applicable (e.g. Python - Advanced)
+        - File size within optimal limits
+
+        Grammar Requirements:
+        - Avoid weak verbs; use strong, specific action verbs
+        - Maintain consistent skill casing (e.g. Python, Machine Learning)
+        - Avoid excessive pronoun use; keep achievements direct
+
+        Provide the final resume draft ready for ATS parsing.
+        """
+
 
     resume = await get_gemini_response(builder_prompt)
     data = parse_gemini_resume_to_data(resume)
@@ -152,8 +208,12 @@ async def build_resume(jd: str = Form(...), export_format: str = Form(...)):
     render_resume(data, output_path)
     return FileResponse(output_path, filename=output_filename)
 
+
 @app.post("/upgrade-resume/")
 async def upgrade_resume(jd: str = Form(...), file: UploadFile = Form(...), export_format: str = Form(...)):
+    """
+    Upgrade an existing resume based on a job description and export as PDF or Word
+    """
     content = await file.read()
     resume_text = extract_text_from_pdf(content)
 
@@ -179,8 +239,12 @@ async def upgrade_resume(jd: str = Form(...), file: UploadFile = Form(...), expo
     render_resume(data, output_path)
     return FileResponse(output_path, filename=output_filename)
 
+
 @app.post("/generate-resume/")
-async def generate_resume(data: ResumeData):
+async def generate_resume_api(data: ResumeData):
+    """
+    Generate resume PDF from structured data input
+    """
     try:
         output_filename = f"{uuid4().hex}_resume.pdf"
         output_path = os.path.join(settings.OUTPUTS_DIR, output_filename)
@@ -196,3 +260,26 @@ async def generate_resume(data: ResumeData):
     except Exception as e:
         logger.error(f"Resume generation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/new-resume/", response_class=HTMLResponse)
+async def new_resume_form(request: Request):
+    """
+    Serve a form for users to create a new resume from scratch.
+    """
+    return templates.TemplateResponse("new_resume.html", {"request": request})
+
+
+@app.get("/list-resumes/", response_class=HTMLResponse)
+async def list_resumes(request: Request):
+    """
+    List all generated resumes for download.
+    """
+    try:
+        files = os.listdir(settings.OUTPUTS_DIR)
+        resume_files = [f for f in files if f.endswith(".pdf") or f.endswith(".docx")]
+        return templates.TemplateResponse("list_resumes.html", {"request": request, "files": resume_files})
+    except Exception as e:
+        logger.error(f"Failed to list resumes: {str(e)}")
+        return HTMLResponse(content="Error listing resumes.", status_code=500)
+
